@@ -24,7 +24,6 @@ obj/
 *.temp.*
 
 # Ignore publish outputs
-wwwroot/
 dist/
 out/
 
