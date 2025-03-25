@@ -1,0 +1,151 @@
+﻿@page "/"
+@rendermode InteractiveWebAssembly
+@using HomagGroup.Blazor3D.Events
+@using HomagGroup.Blazor3D.Viewers
+@using Microsoft.AspNetCore.SignalR.Client
+@using System.Text.Json
+@using SensorApp.Core
+@inject NavigationManager Navigation
+@implements IAsyncDisposable
+
+
+<style>
+/* (A) FLEX CONTAINER */
+.wrap-flex {
+  display: flex;
+  align-items: stretch; /* baseline | center | stretch */
+}
+ 
+/* (B) NOT REALLY IMPORTANT - COSMETICS */
+.wrap-flex > * {
+ 
+  padding: 10px; margin: 0; 
+}
+
+/* (A) BLOCK CONTAINER */
+.wrap-block {
+  display: block;
+}
+ 
+/* (B) NOT REALLY IMPORTANT - COSMETICS */
+.wrap-block > * {
+  padding: 10px; 
+  margin: 0; 
+}
+
+
+</style>
+
+<PageTitle>Pi Sensor Data</PageTitle>
+
+
+<h1>Pi Sensor</h1>
+
+<img src="images/SenseHatDecal.jpg" alt="Sensor" />
+
+<div class="wrap-flex">
+    <img src="./images/celsius.png" alt="accelerometer" width="60" height="60">
+    <span>@SensorViewData.Temp</span>
+</div>
+
+<div class="wrap-flex">
+    <img src="./images/accelerometer-sensor.png" alt="accelerometer" width="60" height="60">
+    <span>"Roll: " + @SensorViewData.Accel.Roll + " Pitch:" + @SensorViewData.Accel.Pitch + " Yaw: " + @SensorViewData.Accel.Yaw</span>
+</div>
+
+<div class="wrap-flex">
+    <img src="./images/barometric_pressure.png" alt="barometric_pressure" width="60" height="60">
+    <span>@SensorViewData.Pressure </span>
+</div>
+
+<div class="wrap-flex">
+    <img src="./images/humidity.png" alt="humidity" width="60" height="60">
+    <span>@SensorViewData.Humidity</span>
+</div>
+
+<div class="wrap-flex">
+    <img src="./images/magnetometer.png" alt="humidity" width="60" height="60">
+    <span>@SensorViewData.Mag</span>
+</div>
+
+<div class="wrap-block">
+    <a href="https://www.flaticon.com/free-icons/temperature" title="temperature icons">Temperature icons created by Those Icons - Flaticon</a>
+</div>
+
+<div class="wrap-block">
+    <a href="https://www.flaticon.com/free-icons/accelerometer-sensor" title="accelerometer sensor icons">Accelerometer sensor icons created by Freepik - Flaticon</a>
+</div>
+
+<div class="wrap-block">
+    <a href="https://www.flaticon.com/free-icons/barometric" title="barometric icons">Barometric icons created by Three musketeers - Flaticon</a>
+</div>
+
+<div class="wrap-block">
+    <a href="https://www.flaticon.com/free-icons/humidity-sensor" title="humidity sensor icons">Humidity sensor icons created by Maan Icons - Flaticon</a>
+</div>
+
+<div class="wrap-block">
+    <a href="https://www.flaticon.com/free-icons/magnetometer" title="magnetometer icons">Magnetometer icons created by Freepik - Flaticon</a>
+</div>
+@code {
+    private HubConnection? hubConnection;
+    private SensorViewData SensorViewData = new SensorViewData(new SensorData());
+    private string connectionState = "Unknown";
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("sensorhub"))
+            .Build();
+
+        hubConnection.On<string>("ReceiveNotification", message =>
+        {          
+            Console.WriteLine($"Client ReceivedMessage: {message}");
+            var sensorData = SensorData.FromString(message);
+
+            if (sensorData != null)
+            {
+                SensorViewData = new SensorViewData(sensorData);
+                InvokeAsync(StateHasChanged);
+            }            
+        });
+
+        hubConnection.Closed += HandleError;
+
+        try
+        {
+            await hubConnection.StartAsync();
+            Console.WriteLine("Connection started");            
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error starting connection: {ex.Message}");
+        }        
+
+        await base.OnInitializedAsync();
+
+    }    
+
+    public bool IsConnected =>
+        hubConnection?.State == HubConnectionState.Connected;
+
+    private void CheckConnectionState()
+    {
+        connectionState = IsConnected ? "Connected" : "Disconnected";
+    }
+
+    private async Task HandleError(Exception arg)
+    {
+        Console.WriteLine($"Connection closed: {arg?.Message}");
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();          
+        }
+    }     
+}

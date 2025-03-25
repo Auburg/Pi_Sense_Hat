@@ -1,0 +1,80 @@
+# Ignore build outputs
+bin/
+obj/
+
+# Ignore user-specific files
+.vscode/
+.vscode/*
+.idea/
+.idea/*
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Ignore logs
+*.log
+*.tlog
+*.log*
+
+# Ignore temporary files
+*.tmp
+*.temp
+*.tmp.*
+*.temp.*
+
+# Ignore publish outputs
+wwwroot/
+dist/
+out/
+
+# Ignore dependency directories
+node_modules/
+bower_components/
+
+# Ignore .NET specific files
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Ignore Rider specific files
+.idea/
+.idea/*
+*.sln.iml
+
+# Ignore Visual Studio Code specific files
+.vscode/
+.vscode/*
+
+# Ignore local history
+.history/
+
+# Ignore coverage reports
+coverage/
+*.coverage
+*.coveragexml
+*.codecov
+
+# Ignore NPM package files
+package-lock.json
+yarn.lock
+
+# Ignore environment variables
+.env
+.env.*
+
+# Ignore by default
+**/bin/
+**/obj/
+**/node_modules/
+**/bower_components/
+**/dist/
+**/out/
+**/wwwroot/
+
+# Ignore Blazor specific files
+**/bin/Debug/
+**/bin/Release/
+**/obj/Debug/
+**/obj/Release/
+**/.vs/
